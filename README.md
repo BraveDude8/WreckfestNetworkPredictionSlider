@@ -8,7 +8,7 @@ The mod is client-side only, so it works on normal (vanilla) servers. The server
 
 ## Why
 
-_Everything below comes from reading the game's code through Ghidra/decomp so it may not be 100% correct. _
+_Everything below comes from reading the game's code through Ghidra/decomp so it may not be 100% correct._
 
 ### The short version
 
