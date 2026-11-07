@@ -8,13 +8,35 @@ The mod is client-side only, so it works on normal (vanilla) servers. The server
 
 ## Why
 
-Between server updates, Wreckfest predicts where remote cars are. The number of cars it predicts each step is:
+### The short version
+
+The game has a hard limit on how many other cars it properly predicts at once, and that limit gets smaller the higher your ping is. On 300 ms you only get about 6. Everyone else is guessed at more roughly, and when the guess is wrong they jump. That jump is the warping you see on high-ping servers. The slider lets you raise the limit.
+
+### How prediction works
+
+Everything below comes from reading the game's code through Ghidra/decomp so it may not be 100% correct.
+The server is in charge of where every car is. It sends your game snapshots: car 7 was here, going this fast, pointing this way. By the time a snapshot reaches you it's already out of date, higher ping means that snapshot is more out of date.
+Your game takes the snapshot and replays the physics for that car from then until now, to work out where it probably is at this moment. That replay is the "prediction". The higher your ping, the more time it has to replay, and the more work each car costs.
+
+Because of that cost, the game doesn't replay every car. Every time a snapshot comes in it picks a few:
+
+1. Your own car always gets replayed, and it doesn't count towards the limit.
+2. Cars that are still partway through a replay from last time keep their place.
+3. The rest of the places go to the cars that matter most: the nearest ones to the camera first. A car that's off screen counts as ten times further away than it really is, so cars you can see get priority.
+
+Any cars on the server that don't fit into the prioritised list just pushes them forward along their current path, at most 480 ms. If the driver actually did anything in that 480ms it isn't reflected until the next update. When the next real snapshot arrives, the game compares it with where it had the car. If the gap is small, it eases the car across over a few frames. If the car is more than about 30 cm away from where it should be, it teleports the car to the right spot in one frame. 
+
+### Where the limit comes from
+
+The number of cars that get a proper replay is:
 
 ```
-cars = budget / your ping      (never more than 24)
+cars = 1800 / your ping      (never more than 24)
 ```
 
-Older builds of the game had a slider for the budget. The current build still saves a value, but it never reads it and always uses **1800 ms**. At high ping that budget covers only a few cars, which is when remote cars warp the most:
+You can think of 1800 as a time budget in milliseconds. Each car costs about one ping's worth of replay, so the budget divided by your ping is roughly how many cars fit.
+
+On a nearby server that's not a problem. At 75 ms you get all 24. But the budget is fixed, so it shrinks fast as ping goes up:
 
 | Ping   | Stock (1800) | 3600 | 5000 | 7208 | 9200 (max) |
 |--------|-------------:|-----:|-----:|-----:|-----------:|
@@ -24,7 +46,24 @@ Older builds of the game had a slider for the budget. The current build still sa
 | 300 ms |  6 | 12 | 16 | 24 | 24 |
 | 350 ms |  5 | 10 | 14 | 20 | 24 |
 
-Players on long routes, for example from Australia to European servers at roughly 250 to 350 ms, are the ones it helps most.
+If you're playing from Australia on a European server at around 300 ms, that's 6 cars out of a full lobby. The rest are running on the cheap guess, and on a track full of people wrecking each other, the cheap guess is wrong a lot.
+
+### What happened to the slider
+
+The 2018 version of the game had a CLIENT PREDICTION TIME slider in the network settings, and it worked a bit differently. The slider value was a time budget, and every car's replay was charged against it until it ran out. The cars that missed out one round went first the next, so it rotated. That version also had no hard snap; a car that was out got eased back in.
+
+At some point the prediction code was rewritten. The slider vanished from the menu and the budget became the fixed 1800. The game still loads the old setting and stores it in memory, but never looks at it again.
+
+### What this mod changes
+
+It puts the slider back in the menu and makes the game use it in place of the 1800. Nothing else about prediction changes. The ranking, the cheap guess, the snapping and the 24-car cap all work exactly as before. You just get more cars on the proper replay.
+
+Two small things to know:
+
+- On the slider values, your ping is counted as 400 ms at most, so on a really bad connection you still get a sensible number of cars. 400 ms is the same replay cap the 2018 version used.
+- DEFAULT (1800MS) is the game's own code path, untouched, so picking it is the same as not having the mod.
+
+Every extra car you predict is more physics for your PC to run each time a snapshot lands. On a decent CPU you shouldn't notice it, but if your frame rate drops at the top of the slider, bring it down a few steps.
 
 ## Install
 
