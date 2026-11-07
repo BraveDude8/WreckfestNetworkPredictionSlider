@@ -32,7 +32,7 @@ Players on long routes, for example from Australia to European servers at roughl
 2. Copy `XINPUT1_3.dll` into the Wreckfest folder, next to `Wreckfest_x64.exe`. To find the folder: Steam > Wreckfest > Manage > Browse local files.
 3. Start the game and go to **Settings > NETWORK > CLIENT PREDICTION TIME**.
 
-The slider runs from 800 ms to 9200 ms. **DEFAULT (1800MS)** sits where 1800 falls on the slider and gives exactly the stock behaviour. At high ping, try 7208 ms or more. Higher values cost more CPU, so if your frame rate drops, come down a few steps.
+The slider runs from 800 ms to 9200 ms. **DEFAULT (1800MS)** sits where 1800 falls on the slider and gives you exactly the same behaviour as stock. Higher values cost more CPU, lower the value if it's causing performance issues.
 
 ## Uninstall
 
