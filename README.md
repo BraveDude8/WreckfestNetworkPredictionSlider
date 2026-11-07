@@ -8,13 +8,14 @@ The mod is client-side only, so it works on normal (vanilla) servers. The server
 
 ## Why
 
+_Everything below comes from reading the game's code through Ghidra/decomp so it may not be 100% correct. _
+
 ### The short version
 
 The game has a hard limit on how many other cars it properly predicts at once, and that limit gets smaller the higher your ping is. On 300 ms you only get about 6. Everyone else is guessed at more roughly, and when the guess is wrong they jump. That jump is the warping you see on high-ping servers. The slider lets you raise the limit.
 
 ### How prediction works
 
-Everything below comes from reading the game's code through Ghidra/decomp so it may not be 100% correct.
 The server is in charge of where every car is. It sends your game snapshots: car 7 was here, going this fast, pointing this way. By the time a snapshot reaches you it's already out of date, higher ping means that snapshot is more out of date.
 Your game takes the snapshot and replays the physics for that car from then until now, to work out where it probably is at this moment. That replay is the "prediction". The higher your ping, the more time it has to replay, and the more work each car costs.
 
